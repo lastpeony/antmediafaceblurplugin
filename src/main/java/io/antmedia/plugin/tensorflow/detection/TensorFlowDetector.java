@@ -77,20 +77,26 @@ public class TensorFlowDetector implements IDeepLearningProcessor {
 			}
 		}
 
-		ArrayList<Rectangle> rectList = new ArrayList<>();
+		//ArrayList<Rectangle> rectList = new ArrayList<>();
 
 		if (recognitionList.size() > 0) {
+			Graphics2D g2D = image.createGraphics();
+			g2D.setStroke(new BasicStroke(3));
+
 			for (Classifier.Recognition recognition : recognitionList) {
+				g2D.setColor(Color.RED);
 
 				Rectangle rectangle = new Rectangle((int) recognition.getLocation().getMinX(),
 						(int) recognition.getLocation().getMinY(), 
 						(int) (recognition.getLocation().getWidth() + 0.5),
 						(int) (recognition.getLocation().getHeight() + 0.5));
-				rectList.add(rectangle);
+				g2D.draw(rectangle);
+
+				//rectList.add(rectangle);
 			}
 
 			captureCount++;
 		}
-		return Utils.blurRectangles(image,rectList);
+		return image;
 	}
 }
