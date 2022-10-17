@@ -1,5 +1,6 @@
 io\antmedia\plugin\tensorflow\detection\Utils.class
 io\antmedia\plugin\IDeepLearningProcessor.class
+io\antmedia\plugin\BlurTechnique.class
 io\antmedia\plugin\TensorflowPlugin.class
 io\antmedia\plugin\tensorflow\detection\Classifier$Recognition.class
 io\antmedia\plugin\Utils.class
@@ -11,6 +12,7 @@ io\antmedia\plugin\tensorflow\detection\TensorFlowInferenceInterface.class
 io\antmedia\plugin\tensorflow\recognition\GraphBuilder.class
 io\antmedia\plugin\tensorflow\detection\Classifier.class
 io\antmedia\plugin\tensorflow\detection\TFObjectDetector.class
+io\antmedia\plugin\BlurFactor.class
 io\antmedia\plugin\tensorflow\detection\TFObjectDetector$1.class
 io\antmedia\plugin\AVFramePool.class
 io\antmedia\plugin\tensorflow\detection\TensorFlowDetector.class

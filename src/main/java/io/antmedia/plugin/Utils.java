@@ -88,6 +88,17 @@ public class Utils {
 		return data;
 	}
 
+	public static BlurFactor getBlurFactor(int blurFactor){
+		if(blurFactor == 0){
+			return BlurFactor.LOW;
+		}else if(blurFactor == 1){
+			return BlurFactor.MEDIUM;
+		}else if(blurFactor == 2){
+			return BlurFactor.HIGH;
+		}
+
+		return BlurFactor.MEDIUM;
+	}
 
 	public static AVFrame toTargetFormat(AVFrame inFrame, int format) {
 		SwsContext sws_ctx = null;

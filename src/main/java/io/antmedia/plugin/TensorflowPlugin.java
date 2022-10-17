@@ -32,13 +32,13 @@ public class TensorflowPlugin implements ApplicationContextAware, IStreamListene
 		app.addStreamListener(this);
 	}
 		
-	public boolean startDetection(String streamId, boolean realTime) 
+	public boolean startDetection(String streamId, boolean realTime, BlurTechnique blurTechnique, BlurFactor blurFactor)
 	{
 		AntMediaApplicationAdapter app = getApplication();
 
 		TensorFlowDetector tensorFlowDetector = null;
 		try {
-			tensorFlowDetector = new TensorFlowDetector("lib/detection/", vertx);
+			tensorFlowDetector = new TensorFlowDetector("lib/detection/", vertx, blurTechnique, blurFactor);
 
 			frameListener = new TensorflowFrameListener(vertx, tensorFlowDetector, app, realTime);
 			app.addFrameListener(streamId, frameListener);

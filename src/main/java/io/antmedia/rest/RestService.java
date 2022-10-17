@@ -2,7 +2,6 @@ package io.antmedia.rest;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -13,6 +12,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.antmedia.plugin.BlurTechnique;
+import io.antmedia.plugin.Utils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
@@ -36,10 +37,17 @@ public class RestService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response start(@PathParam("streamId") String streamId, 
-			@ApiParam(value = "To create image files instead of realtime demonstrations.", required = false) @QueryParam("offline") boolean offline) {
+			@ApiParam(value = "To create image files instead of realtime demonstrations.", required = false) @QueryParam("offline") boolean offline,
+						  @ApiParam(value = "Bluring technique used. 0 for Convolution or 1 for Gaussian blur.", required = false, defaultValue = "0") @QueryParam("blurTechnique") int blurTechnique,
+						  @ApiParam(value = "Strength of bluring.", required = false, defaultValue = "1") @QueryParam("blurFactor") int blurFactor) {
 		TensorflowPlugin app = getPluginApp();
-		
-		boolean result = app.startDetection(streamId, !offline);
+		boolean result = false;
+		if(blurTechnique == BlurTechnique.CONVOLUTION_BLUR.ordinal()){
+			result = app.startDetection(streamId, !offline, BlurTechnique.CONVOLUTION_BLUR, Utils.getBlurFactor(blurFactor));
+		}else{
+			nu.pattern.OpenCV.loadLocally();
+			result = app.startDetection(streamId, !offline, BlurTechnique.GAUSSIAN_BLUR, Utils.getBlurFactor(blurFactor));
+		}
 
 		return Response.status(Status.OK).entity(new Result(result)).build();
 	}

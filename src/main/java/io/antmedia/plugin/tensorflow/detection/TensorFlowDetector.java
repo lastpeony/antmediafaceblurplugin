@@ -2,20 +2,15 @@ package io.antmedia.plugin.tensorflow.detection;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
+import io.antmedia.plugin.BlurFactor;
+import io.antmedia.plugin.BlurTechnique;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +28,17 @@ public class TensorFlowDetector implements IDeepLearningProcessor {
 	private long lastUpdate;
 	private boolean tensorflowRunning;
 
+	private BlurTechnique blurTechnique;
+
+	private BlurFactor blurFactor;
+
 	private static Logger logger = LoggerFactory.getLogger(TensorFlowDetector.class);
 
-	public TensorFlowDetector(String modelDir, Vertx vertx) throws IOException {
+	public TensorFlowDetector(String modelDir, Vertx vertx, BlurTechnique blurTechnique, BlurFactor blurFactor) throws IOException {
 		this.classifier = TFObjectDetector.create(modelDir);
 		this.vertx = vertx;
+		this.blurTechnique = blurTechnique;
+		this.blurFactor = blurFactor;
 	}
 
 
@@ -53,7 +54,7 @@ public class TensorFlowDetector implements IDeepLearningProcessor {
 				int r = (int)(data[k++]& 0xFF);
 				int g = (int)(data[k++]& 0xFF);
 				int b = (int)(data[k++]& 0xFF);
-				//int a = (int)(data[k++]& 0xFF);
+				int a = (int)(data[k++]& 0xFF);
 
 				Color c = new Color(r, g, b);
 				image.setRGB(x, y, c.getRGB());
@@ -77,26 +78,38 @@ public class TensorFlowDetector implements IDeepLearningProcessor {
 			}
 		}
 
-		//ArrayList<Rectangle> rectList = new ArrayList<>();
+		ArrayList<Rectangle> rectList = new ArrayList<>();
 
 		if (recognitionList.size() > 0) {
-			Graphics2D g2D = image.createGraphics();
-			g2D.setStroke(new BasicStroke(3));
 
 			for (Classifier.Recognition recognition : recognitionList) {
-				g2D.setColor(Color.RED);
+				double rectangleX = recognition.getLocation().getMinX()-10;
+				double rectangleY = recognition.getLocation().getMinY()-10;
+				double rectangleWidth = recognition.getLocation().getWidth()+20;
+				double rectangleHeight = recognition.getLocation().getHeight()+20;
+				if(rectangleX < 0){
+					rectangleX = 0;
+				}
 
-				Rectangle rectangle = new Rectangle((int) recognition.getLocation().getMinX(),
-						(int) recognition.getLocation().getMinY(), 
-						(int) (recognition.getLocation().getWidth() + 0.5),
-						(int) (recognition.getLocation().getHeight() + 0.5));
-				g2D.draw(rectangle);
+				if(rectangleY < 0){
+					rectangleY = 0;
+				}
+				if(rectangleX + rectangleWidth > image.getWidth()){
+					rectangleX = image.getWidth() - rectangleWidth;
+				}
+				if(rectangleY + rectangleHeight > image.getHeight()){
+					rectangleY = image.getHeight() - rectangleHeight;
+				}
 
-				//rectList.add(rectangle);
+				Rectangle rectangle = new Rectangle((int) rectangleX,
+						(int) rectangleY,
+						(int) rectangleWidth,
+						(int) rectangleHeight);
+				rectList.add(rectangle);
 			}
 
 			captureCount++;
 		}
-		return image;
+		return Utils.blurRectangles(image, rectList, blurTechnique, blurFactor);
 	}
 }

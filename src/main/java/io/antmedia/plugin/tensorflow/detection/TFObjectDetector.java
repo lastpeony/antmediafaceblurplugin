@@ -123,9 +123,6 @@ public class TFObjectDetector implements Classifier {
 
     @Override
     public List<Recognition> recognizeImage(final BufferedImage image) {
-        // Preprocess the image data from 0-255 int to normalized float based
-        // on the provided parameters.
-
         inference.feedImage(inputName, getPixelBytes(image));
 
         inference.run(outputNames, false);
@@ -150,7 +147,7 @@ public class TFObjectDetector implements Classifier {
                                 return Float.compare(rhs.getConfidence(), lhs.getConfidence());
                             }
                         });
-        
+
         // Scale them back to the input size.
         for (int i = 0; i < outputScores.length; ++i) {
             float xmin = outputLocations[4 * i + 1] * image.getWidth();
@@ -164,13 +161,12 @@ public class TFObjectDetector implements Classifier {
                             xmax - xmin,
                             ymax - ymin) {
                     };
-            if (outputScores[i] > 0.4) {
+            if (outputScores[i] > 0.045f) {
                 pq.add(new Recognition("" + i, labels.get((int) outputClasses[i]), outputScores[i], detection));
             }
         }
-
         final ArrayList<Recognition> recognitions = new ArrayList<Recognition>();
-        for (int i = 0; i < Math.min(pq.size(), MAX_RESULTS); ++i) {
+        while(!pq.isEmpty()){
             recognitions.add(pq.poll());
         }
         return recognitions;
